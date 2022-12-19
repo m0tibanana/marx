@@ -12,7 +12,7 @@ git add .
 git config --global user.email "come@on.com"
 git config --global user.name "MotiBanana"
 git commit -m "bot"
-git push --set-upstream origin main
+git push --set-upstream origin test
 
 curl -H "Authorization: token YOUR_GITHUB_PERSONAL_ACCESS_TOKEN" \
      -H "Accept: application/vnd.github+json" \
@@ -24,4 +24,4 @@ curl -H "Authorization: token YOUR_GITHUB_PERSONAL_ACCESS_TOKEN" \
      }' \
      https://api.github.com/repos/USERNAME/REPO_NAME/pulls
 
-go test ./... -coverprofile cover.out
+# go test ./... -coverprofile cover.out
