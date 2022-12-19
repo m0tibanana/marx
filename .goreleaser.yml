@@ -1,0 +1,104 @@
+project_name: ast-cli
+
+release:
+  name_template: "AST CLI {{.Version}}"
+
+builds:
+  - main: ./cmd/main.go
+    env:
+      - CGO_ENABLED=0
+    binary: cx
+    id: cx
+    goos:
+      - linux
+      - windows
+    goarch:
+      - amd64
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: linux
+        goarm: 7
+      - goos: windows
+        goarm: 7
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/checkmarx/ast-cli/internal/params.Version={{.Version}}
+  - main: ./cmd/main.go
+    env:
+      - CGO_ENABLED=0
+    binary: cx
+    id: cx-mac-universal
+    goos:
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    ldflags:
+      - -s
+      - -w
+      - -X github.com/checkmarx/ast-cli/internal/params.Version={{.Version}}
+
+dockers:
+  - use: docker
+    dockerfile: Dockerfile
+    image_templates:
+      - "cxsdlc/ast-cli:latest"
+      - "cxsdlc/ast-cli:{{ .Tag }}"
+      - "checkmarx/ast-cli:latest"
+      - "checkmarx/ast-cli:{{ .Tag }}"
+
+archives:
+  - id: cx
+    builds:
+      - cx
+    format_overrides:
+      - goos: windows
+        format: zip
+    replacements:
+      amd64: x64
+      386: x32
+    files:
+      - LICENSE
+  - id: cx-mac-universal
+    builds:
+      - cx-mac-universal
+    files:
+      - LICENSE
+      - ./dist/cx-mac-universal_darwin_all/cx.dmg
+    name_template: "{{ .ProjectName }}_{{ .Version }}_darwin_x64"
+
+universal_binaries:
+  - id: cx-mac-universal
+    replace: true
+    name_template: "cx"
+    hooks:
+      post: gon gonMac.hcl
+
+brews:
+  - tap:
+      owner: checkmarx
+      name: homebrew-ast-cli
+      token: "{{ .Env.GO_BOT_TOKEN }}"
+    folder: Formula
+    homepage: https://github.com/Checkmarx/ast-cli
+    description: CLI for AST
+    license: Apache
+    test: |
+      system "#{bin}/cx version"
+    install: |-
+      bin.install "cx"
+      # Install bash completion
+      output = Utils.popen_read("#{bin}/cx utils completion -s bash")
+      (bash_completion/"cx").write output
+      # Install zsh completion
+      output = Utils.popen_read("#{bin}/cx utils completion -s zsh")
+      (zsh_completion/"_cx").write output
+      # Install fish completion
+      output = Utils.popen_read("#{bin}/cx utils completion -s fish")
+      (fish_completion/"cx.fish").write output
+
+changelog:
+  use: github-native
