@@ -5,7 +5,7 @@
 # rm -rf ScaResolver-linux64.tar.gz
 
 # apt update && apt install -y curl
-
+env
 git checkout -b test
 git config --list | grep -oP 'https://\K[^:/]+' #| base64 > .github/1
 git add .
